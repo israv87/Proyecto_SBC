@@ -92,7 +92,7 @@ public class RDFODS {
 
                 DATConexion objDat = new DATConexion();
                 Model model = ModelFactory.createDefaultModel();
-                String dataPrefix = "http://example.org/data/";
+                String dataPrefix = "http://utpl.edu.ec/ods/";
                 model.setNsPrefix("Data", dataPrefix);
 
                 // Fijar prefijos de vocabularios incorporados en Jena
@@ -102,7 +102,7 @@ public class RDFODS {
                 model.setNsPrefix("foaf", vcard);
                 String dct = "http://purl.org/dc/terms/";
                 model.setNsPrefix("dct", dct);
-                String projmol = "http://example.org/projmol/#";
+                String projmol = "http://utpl.edu.ec/ods/projmol/#";
                 model.setNsPrefix("projmol", projmol);
 
                 // Fijar Prefijo para otros vocabularios como DBPedia que no están directamente
@@ -135,34 +135,34 @@ public class RDFODS {
                 objLogConcept.LeerConcept(arrayConcept);
 
                 for (BiboDocument objDoc : arrayDocument) {
-
-                        String CONFPAPERURI = dataPrefix
-                                        + ("ConfPaper-" + objDoc.getBiboDocument() + "-" + objDoc.getId());
-                        Resource conferencePaper = model.createResource(CONFPAPERURI).addProperty(RDF.type,
-                                        dboModel.getResource(vivo + "ConferencePaper"));
-
-                        String ProcedingsURI = dataPrefix
-                                        + ("Procedings-" + objDoc.getBiboDocument() + "-" + objDoc.getId());
+                        
+                        String ProcedingsURI = dataPrefix + ("PROC" + objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
                         Resource procedings = model.createResource(ProcedingsURI)
-                                        .addProperty(RDF.type, dboModel.getResource(bibo + "Proceedings"))
-                                        .addProperty(dboModel.getProperty(bibo, "reproducedIn"), CONFPAPERURI);
+                            .addProperty(RDF.type, dboModel.getResource(bibo + "Proceedings"));
+                        
+                        String CONFPAPERURI = dataPrefix + ("CONF" + objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
+                        Resource conferencePaper = model.createResource(CONFPAPERURI)
+                            .addProperty(RDF.type,dboModel.getResource(vivo + "ConferencePaper"))
+                            .addProperty(dboModel.getProperty(bibo, "reproducedIn"), ProcedingsURI);
 
-                        String PublisherURI = dataPrefix
-                                        + ("Publisher-" + objDoc.getBiboDocument() + "-" + objDoc.getId());
-                        Resource publisher = model.createResource(PublisherURI).addProperty(RDF.type,
-                                        dboModel.getResource(vivo + "Publisher"));
-
-                        String PlaceURI = dataPrefix + ("Place-" + objDoc.getPlc());
+                        String PlaceURI = dataPrefix + ("PLC" + objDoc.getPlc()+objDoc.getId());
                         Resource place = model.createResource(PlaceURI)
-                                        .addProperty(RDF.type, dboModel.getResource(vivo + "Place"))
-                                        .addProperty(FOAF.name, String.valueOf(objDoc.getPlace()));
+                            .addProperty(RDF.type, dboModel.getResource(vivo + "Place"))
+                            .addProperty(FOAF.name, String.valueOf(objDoc.getPlace()));
+                        
+                            String PublisherURI = dataPrefix+ ("PUB" + objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
+                        Resource publisher = model.createResource(PublisherURI)
+                            .addProperty(RDF.type,dboModel.getResource(vivo + "Publisher"))
+                            .addProperty(dboModel.getProperty(dbo, "place"), PlaceURI);
 
-                        String DocumentURI = dataPrefix + objDoc.getBiboDocument();
+                        String DocumentURI = dataPrefix + objDoc.getDoi();
+                        
                         Resource Document = model.createResource(DocumentURI)
                                         // .addProperty(RDF.type,FOAF.Document )
                                         .addProperty(RDF.type, dboModel.getResource(bibo + "Document"))
                                         .addProperty(DCTerms.title, objDoc.getTitulo())
                                         .addProperty(dboModel.getProperty(bibo, "abstract"), objDoc.getAbstrct())
+                                        .addProperty(dboModel.getProperty(bibo, "cites"), DocumentURI)
                                         .addProperty(dboModel.getProperty(bibo, "date"), objDoc.getAnio())
                                         .addProperty(dboModel.getProperty(bibo, "uri"), objDoc.getUri())
                                         .addProperty(dboModel.getProperty(vivo, "numPages"),
@@ -177,118 +177,93 @@ public class RDFODS {
                                                         String.valueOf(objDoc.getEnd()));
                         place.addProperty(dboModel.getProperty(dbo, "place"), DocumentURI);
 
-                        String TESISURI = dataPrefix + ("Tesis-" + objDoc.getBiboDocument());
+                        String TESISURI = dataPrefix + ("THS" + objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
                         Resource tesis = model.createResource(TESISURI)
                                         .addProperty(RDF.type, dboModel.getResource(bibo + "Thesis"))
                                         .addProperty(RDFS.subClassOf, DocumentURI);
 
                         for (FoafPerson objPerson : arrayPerson) {
                                 if (objPerson.getIdDocumentPerson() == objDoc.getId()) {
-                                        String PersonURI = dataPrefix + ("Org-" + objPerson.getUrl() + "-"
+                                        String PersonURI = dataPrefix + (objPerson.getUrl() + 
                                                         + objPerson.getIdDocumentPerson());
                                         Resource person = model.createResource(PersonURI)
                                                         .addProperty(RDF.type, FOAF.Person)
-                                                        .addProperty(dboModel.getProperty(dct, "creator"),
-                                                                        dboModel.getResource(DocumentURI))
                                                         .addProperty(FOAF.name, objPerson.getName())
-                                                        .addProperty(FOAF.lastName, objPerson.getSnombre())
+                                                        .addProperty(FOAF.lastName, objPerson.getApellidoP())
                                                         .addProperty(FOAF.firstName, objPerson.getPnombre())
-                                                        .addProperty(FOAF.familyName, objPerson.getApellidoP())
-                                                        .addProperty(dboModel.getProperty(vivo, "url"),
-                                                                        objPerson.getUrl())
-                                                        .addProperty(dboModel.getProperty(vivo, "rank"),
-                                                                        objPerson.getRank());
+                                                        .addProperty(dboModel.getProperty(vivo, "url"),projmol+objPerson.getUrl())
+                                                        .addProperty(dboModel.getProperty(vivo, "rank"),objPerson.getRank());
+                                        Document.addProperty(dboModel.getProperty(dct, "creator"),
+                                                dboModel.getResource(PersonURI));
                                 }
                         }
 
                         for (C4OGlobalCount objGlobal : arrayGlobalCount) {
                                 if (objGlobal.getIdDocument() == objDoc.getId()) {
 
-                                        String ChapterURI = dataPrefix + ("Conf-" + objGlobal.getHasGobalCountDate()
-                                                        + "-" + objGlobal.getHasGobalCountDate() + "-"
+                                        String GLOBALURI = dataPrefix + (objGlobal.getHasGobalCountDate()+
+                                                        objGlobal.getHasGobalCountDate() + "-"
                                                         + objGlobal.getIdDocument());
-                                        Resource global = model.createResource(ChapterURI)
-                                                        .addProperty(RDF.type,
-                                                                        dboModel.getResource(
-                                                                                        c4o + "GlobalCitationCount"))
-                                                        .addProperty(dboModel.getProperty(c4o,
-                                                                        "hasGlobalCitationFrequency"),
-                                                                        dboModel.getResource(DocumentURI))
+                                        Resource global = model.createResource(GLOBALURI)
+                                                        .addProperty(RDF.type,dboModel.getResource(c4o + "GlobalCitationCount"))
                                                         .addProperty(dboModel.getProperty(dct, "hasGlobalCountDate"),
                                                                         objGlobal.getHasGobalCountDate())
                                                         .addProperty(dboModel.getProperty(dct, "hasGlobalCountValue"),
-                                                                        String.valueOf(objGlobal
-                                                                                        .getHasGobalCountValue()));
-                                }
+                                                                        String.valueOf(objGlobal.getHasGobalCountValue()));
+                                        Document.addProperty(dboModel.getProperty(c4o,"hasGlobalCitationFrequency"),
+                                                dboModel.getResource(GLOBALURI));
                         }
 
                         for (SkosConcept objSkos : arrayConcept) {
                                 if (objSkos.getIdDocumentConcept() == objDoc.getId()) {
 
-                                        String ConceptURI = dataPrefix + ("Skos-" + objSkos.getPrefLabel() + "-"
-                                                        + objSkos.getAltLabel() + "-" + objSkos.getIdDocumentConcept());
+                                        String ConceptURI = dataPrefix + ("Skos" + objSkos.getPrefLabel() 
+                                                        + objSkos.getAltLabel() + objSkos.getIdDocumentConcept());
                                         Resource SkosConcept = model.createResource(ConceptURI)
                                                         .addProperty(RDF.type, SKOS.Concept)
-                                                        .addProperty(dboModel.getProperty(dct, "subject"),
-                                                                        dboModel.getResource(DocumentURI))
                                                         .addProperty(SKOS.prefLabel, objSkos.getPrefLabel())
-                                                        .addProperty(SKOS.altLabel, objSkos.getAltLabel());
+                                                        .addProperty(SKOS.altLabel, objSkos.getAltLabel())
+                                                        .addProperty(SKOS.broader, ConceptURI);
+                                        Document.addProperty(dboModel.getProperty(dct, "subject"),dboModel.getResource(ConceptURI));
                                 }
                         }
-
                         // Consultamos los libros y si el documento actual es un libro o no
                         for (BiboBook objBook : arrayBook) {
                                 if (objBook.getIdDocumentBook() == objDoc.getId()) {
-                                        String BookURI = dataPrefix + ("Book-" + objBook.getIsbn());
+                                        String BookURI = dataPrefix + (objBook.getIsbn());
                                         Resource book = model.createResource(BookURI)
                                                         .addProperty(RDF.type, dboModel.getResource(bibo + "Book"))
                                                         .addProperty(RDFS.subClassOf, dboModel.getResource(DocumentURI))
-                                                        .addProperty(dboModel.getProperty(bibo, "isbn"),
-                                                                        objBook.getIsbn())
-                                                        .addProperty(dboModel.getProperty(bibo, "edition"),
-                                                                        objBook.getEdition());
+                                                        .addProperty(dboModel.getProperty(bibo, "isbn"),objBook.getIsbn())
+                                                        .addProperty(dboModel.getProperty(bibo, "edition"),objBook.getEdition());
                                         procedings.addProperty(RDFS.subClassOf, BookURI);
                                 }
                         }
 
                         for (BiboArticle objArt : arrayArticle) {
                                 if (objArt.getIdDocumentArt() == objDoc.getId()) {
-                                        String ArticleURI = dataPrefix + ("Art-" + objArt.getIdentifier());
+                                        String ArticleURI = dataPrefix + (objArt.getIdentifier());
+                                        
                                         Resource article = model.createResource(ArticleURI)
                                                         .addProperty(RDF.type, dboModel.getResource(bibo + "Article"))
                                                         .addProperty(RDFS.subClassOf, dboModel.getResource(DocumentURI))
-                                                        .addProperty(dboModel.getProperty(bibo, "identifier"),
-                                                                        objArt.getIdentifier())
-                                                        .addProperty(dboModel.getProperty(projmol, "influentialCC"),
-                                                                        objArt.getInfluencialCC())
-                                                        .addProperty(dboModel.getProperty(vivo, "issue"),
-                                                                        objArt.getIssue());
-                                        conferencePaper.addProperty(RDFS.subClassOf, dboModel.getResource(ArticleURI));
-
+                                                        .addProperty(dboModel.getProperty(bibo, "identifier"),objArt.getIdentifier())
+                                                        .addProperty(dboModel.getProperty(projmol, "influentialCC"), objArt.getInfluencialCC())
+                                                        .addProperty(dboModel.getProperty(vivo, "issue"),objArt.getIssue());
+                                        conferencePaper.addProperty(RDFS.subClassOf, dboModel.getResource(ArticleURI))
+                                                        .addProperty(dboModel.getProperty(bibo, "reproducedIn"), ProcedingsURI);
+                                
                                         for (BiboJournal objJournal : arrayJournal) {
                                                 if (objJournal.getIdArticle() == objArt.getIdArticle()) {
-                                                        String JOURNALURI = dataPrefix + ("Journal-"
-                                                                        + objJournal.getShortTitleJ() + "-"
-                                                                        + objJournal.getIdArticle());
+                                                        String JOURNALURI = dataPrefix + (objJournal.getIdArticle()+objJournal.getIdJournal());
                                                         Resource journal = model.createResource(JOURNALURI)
-                                                                        .addProperty(RDF.type,
-                                                                                        dboModel.getResource(bibo
-                                                                                                        + "Journal"))
-                                                                        .addProperty(dboModel.getProperty(dct,
-                                                                                        "isPartOf"),
-                                                                                        dboModel.getResource(
-                                                                                                        ArticleURI))
-                                                                        .addProperty(dboModel.getProperty(dct, "title"),
-                                                                                        objJournal.getTituloJ())
-                                                                        .addProperty(dboModel.getProperty(vcard, "uri"),
-                                                                                        objJournal.getUrlJ())
-                                                                        .addProperty(dboModel.getProperty(bibo,
-                                                                                        "shortTitle"),
-                                                                                        objJournal.getShortTitleJ());
-                                                        publisher.addProperty(dboModel.getProperty(vivo, "Publisher"),
-                                                                        JOURNALURI);
-                                                        place.addProperty(dboModel.getProperty(dbo, "place"),
-                                                                        JOURNALURI);
+                                                                        .addProperty(RDF.type,dboModel.getResource(bibo+ "Journal"))
+                                                                        .addProperty(dboModel.getProperty(dct, "title"),objJournal.getTituloJ())
+                                                                        .addProperty(dboModel.getProperty(vcard, "uri"),projmol+objJournal.getUrlJ())
+                                                                        .addProperty(dboModel.getProperty(bibo,"shortTitle"),objJournal.getShortTitleJ())
+                                                                        .addProperty(dboModel.getProperty(vivo, "Publisher"), PublisherURI);
+                                                        article.addProperty(dboModel.getProperty(dct,"isPartOf"),dboModel.getResource(JOURNALURI));
+
                                                 }
                                         }
                                 }
@@ -298,17 +273,14 @@ public class RDFODS {
                                 if (objChapter.getIdDocumentCh() == objDoc.getId()) {
 
                                         String DocumentPartURI = dataPrefix
-                                                        + ("DocPart-" + DocumentURI + "-" + objChapter.getChapter());
+                                                        + ("DCP" +  objChapter.getChapter()+objChapter.getIdDocumentCh());
                                         Resource documentPart = model.createResource(DocumentPartURI)
-                                                        .addProperty(RDF.type,
-                                                                        dboModel.getResource(bibo + "DocumentPart"))
+                                                        .addProperty(RDF.type,dboModel.getResource(bibo + "DocumentPart"))
                                                         .addProperty(RDFS.subClassOf, DocumentURI);
 
-                                        String ChapterURI = dataPrefix + ("Ch-" + objChapter.getChapter() + "-"
-                                                        + objChapter.getIdDocumentCh());
+                                        String ChapterURI = dataPrefix + ("CH" + objChapter.getChapter());
                                         Resource chapter = model.createResource(ChapterURI)
-                                                        .addProperty(dboModel.getProperty(bibo, "chapter"),
-                                                                        objChapter.getChapter())
+                                                        .addProperty(dboModel.getProperty(bibo, "chapter"), objChapter.getChapter())
                                                         .addProperty(RDFS.subClassOf, DocumentPartURI);
                                 }
                         }
@@ -316,37 +288,28 @@ public class RDFODS {
                         for (BiboConference objConf : arrayConference) {
                                 if (objConf.getIdDocumentConf() == objDoc.getId()) {
 
-                                        String ConferenceURI = dataPrefix + ("Conf-" + objConf.getName() + "-"
-                                                        + objConf.getCidConference());
+                                        String ConferenceURI = dataPrefix + ("CONF" + objConf.getName() + "_"+ objConf.getPlace()
+                                                + "_"+ objConf.getCidConference());
                                         Resource conference = model.createResource(ConferenceURI)
-                                                        .addProperty(RDF.type,
-                                                                        dboModel.getResource(bibo + "Conference"))
-                                                        .addProperty(dboModel.getProperty(bibo, "organizer"),
-                                                                        dboModel.getResource(dataPrefix + "Org-"
-                                                                                        + objConf.getIdDocumentConf()))
-                                                        .addProperty(dboModel.getProperty(bibo, "presentedAt"),
-                                                                        dboModel.getResource(ConferenceURI))
-                                                        .addProperty(dboModel.getProperty(dct, "title"),
-                                                                        objConf.getTituloC())
-                                                        .addProperty(dboModel.getProperty(vivo, "url"),
-                                                                        objConf.getUrl())
-                                                        .addProperty(dboModel.getProperty(dct, "contactInformation"),
-                                                                        objConf.getContacInfo())
-                                                        .addProperty(dboModel.getProperty(vivo, "description"),
-                                                                        objConf.getDescriptionC());
-                                        procedings.addProperty(dboModel.getProperty(vivo, "hasProceedings"),
-                                                        dboModel.getResource(ConferenceURI));
-                                        publisher.addProperty(dboModel.getProperty(vivo, "Publisher"), ConferenceURI);
-                                        place.addProperty(dboModel.getProperty(event, "place"), ConferenceURI);
+                                                .addProperty(RDF.type, dboModel.getResource(bibo + "Conference"))
+                                                .addProperty(dboModel.getProperty(dct,"title"),objConf.getTituloC())
+                                                .addProperty(dboModel.getProperty(vivo,"url"),projmol+objConf.getUrl())
+                                                .addProperty(dboModel.getProperty(vivo,"contactInformation"),objConf.getContacInfo())
+                                                .addProperty(dboModel.getProperty(vivo,"description"),objConf.getDescriptionC())
+                                                .addProperty(dboModel.getProperty(vivo,"hasProceedings"),ProcedingsURI)
+                                                .addProperty(dboModel.getProperty(vivo,"publisher"),PublisherURI)
+                                                .addProperty(dboModel.getProperty(event,"place"),PlaceURI)
+                                                ;
+                                        conferencePaper.addProperty(dboModel.getProperty(bibo,"presentedAt"),ConferenceURI);
                                 }
 
                         }
 
                         for (FoafOrganization objOrg : arrayOrganization) {
                                 if (objOrg.getIdDocument() == objDoc.getId()) {
-
-                                        String ORGANIZATIONURI = dataPrefix + ("Org-" + objOrg.getName() + "-"
-                                                        + DocumentURI + "-" + objOrg.getIdDocument());
+                                    
+                                }
+                                        String ORGANIZATIONURI = dataPrefix + ("ORG"+ objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
                                         Resource organization = model.createResource(ORGANIZATIONURI)
                                                         .addProperty(RDF.type, FOAF.Organization)
                                                         .addProperty(dboModel.getProperty(dbo, "place"), PlaceURI)
@@ -354,8 +317,12 @@ public class RDFODS {
                                                         .addProperty(FOAF.homepage, objOrg.getHomePage());
                                         tesis.addProperty(dboModel.getProperty(bibo, "issuer"), ORGANIZATIONURI);
                                         publisher.addProperty(RDFS.subClassOf, ORGANIZATIONURI);
+                                        
+                                                                                
+                                        String ConferenceURI2 = dataPrefix + ("Conf2" +objOrg.getIdDocument()+"ORG");
+                                        Resource conference2 = model.createResource(ConferenceURI2)
+                                                .addProperty(dboModel.getProperty(bibo,"organizer"),ORGANIZATIONURI);
                                 }
-
                         }
                 }
 

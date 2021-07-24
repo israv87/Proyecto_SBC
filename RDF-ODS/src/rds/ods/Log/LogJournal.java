@@ -38,6 +38,8 @@ public class LogJournal {
                 String value = rs.getString(columnName);
                 if (columnName.equals("idArticle"))
                     objJournal.setIdArticle(Integer.parseInt(value));
+                if (columnName.equals("idJournal"))
+                    objJournal.setIdJournal(Integer.parseInt(value));
                 if (columnName.equals("tituloJ"))
                      objJournal.setTituloJ(value);
                 if (columnName.equals("shortTitleJ"))
