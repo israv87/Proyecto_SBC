@@ -13,14 +13,16 @@ public class SkosConcept {
     String prefLabel;
     String altLabel;
     int idDocumentConcept;
+    String namec;
 
     public SkosConcept() {
     }
 
-    public SkosConcept(String prefLabel, String altLabel, int idDocumentConcept) {
+    public SkosConcept(String prefLabel, String altLabel, int idDocumentConcept, String namec) {
         this.prefLabel = prefLabel;
         this.altLabel = altLabel;
         this.idDocumentConcept = idDocumentConcept;
+        this.namec = namec;
     }
 
     public String getPrefLabel() {
@@ -47,10 +49,13 @@ public class SkosConcept {
         this.idDocumentConcept = idDocumentConcept;
     }
 
-    @Override
-    public String toString() {
-        return "BiboConcept{" + "prefLabel=" + prefLabel + ", altLabel=" + altLabel + ", idDocumentConcept=" + idDocumentConcept + '}';
+    public String getNamec() {
+        return namec;
     }
-    
+
+    public void setNamec(String namec) {
+        this.namec = namec;
+    }
+
     
 }

@@ -212,13 +212,13 @@ public class RDFODS {
                                                                         String.valueOf(objGlobal.getHasGobalCountValue()));
                                         Document.addProperty(dboModel.getProperty(c4o,"hasGlobalCitationFrequency"),
                                                 dboModel.getResource(GLOBALURI));
+                               }  
                         }
 
                         for (SkosConcept objSkos : arrayConcept) {
                                 if (objSkos.getIdDocumentConcept() == objDoc.getId()) {
 
-                                        String ConceptURI = dataPrefix + ("Skos" + objSkos.getPrefLabel() 
-                                                        + objSkos.getAltLabel() + objSkos.getIdDocumentConcept());
+                                        String ConceptURI = dataPrefix + ("SKOS" + objSkos.getNamec() + objSkos.getIdDocumentConcept());
                                         Resource SkosConcept = model.createResource(ConceptURI)
                                                         .addProperty(RDF.type, SKOS.Concept)
                                                         .addProperty(SKOS.prefLabel, objSkos.getPrefLabel())
@@ -308,7 +308,7 @@ public class RDFODS {
                         for (FoafOrganization objOrg : arrayOrganization) {
                                 if (objOrg.getIdDocument() == objDoc.getId()) {
                                     
-                                }
+                               
                                         String ORGANIZATIONURI = dataPrefix + ("ORG"+ objDoc.getAnio()+ objDoc.getPlc()+ objDoc.getId());
                                         Resource organization = model.createResource(ORGANIZATIONURI)
                                                         .addProperty(RDF.type, FOAF.Organization)
@@ -323,7 +323,7 @@ public class RDFODS {
                                         Resource conference2 = model.createResource(ConferenceURI2)
                                                 .addProperty(dboModel.getProperty(bibo,"organizer"),ORGANIZATIONURI);
                                 }
-                        }
+                         }
                 }
 
                 StmtIterator iter = model.listStatements();
@@ -353,7 +353,7 @@ public class RDFODS {
                 // Save to a file
                 // RDFWriter writer = model.getWriter("RDF/XML");
                 // writer.write(model,os, "");
-                RDFDataMgr.write(System.out, model, Lang.RDFXML);
+                RDFDataMgr.write(System.out, model, Lang.TURTLE);
                 // Close models
                 dboModel.close();
                 model.close();

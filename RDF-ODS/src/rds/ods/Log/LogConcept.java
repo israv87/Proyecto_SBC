@@ -36,12 +36,14 @@ DATConexion objcon = new DATConexion();
            SkosConcept objConcept = new SkosConcept();
             for (String columnName : columnas) {
                 String value = rs.getString(columnName);
-                if (columnName.equals("idDocument"))
+                if (columnName.equals("idconcept"))
                     objConcept.setIdDocumentConcept(Integer.parseInt(value));
                 if (columnName.equals("prefLabel"))
                     objConcept.setPrefLabel(value);
                 if (columnName.equals("altLabel"))
                     objConcept.setAltLabel(value);
+                if (columnName.equals("namec"))
+                    objConcept.setNamec(value);
             }
            arrayConcept.add(objConcept);
         }
